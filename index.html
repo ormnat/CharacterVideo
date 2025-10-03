@@ -13,58 +13,76 @@
         }
     </style>
 </head>
-<body class="bg-gray-900 overflow-hidden h-screen flex items-center justify-center">
+<body class="bg-gray-900 overflow-hidden h-screen">
 
     <!-- 
-        The video element is set to:
-        1. autoplay: Start playing as soon as it can.
-        2. loop: Repeat indefinitely.
-        3. muted: Required for autoplay to work on most modern browsers.
-        4. playsinline: Recommended for proper behavior on iOS devices.
+        Full-screen container to center the video while maintaining its aspect ratio.
+        The video element now uses 'object-contain' to ensure the whole video is visible
+        and not stretched/cropped.
     -->
-    <video 
-        id="loopedVideo"
-        src="Clue Night.mp4" 
-        autoplay 
-        loop 
-        muted 
-        playsinline
-        class="absolute z-0 w-auto min-w-full min-h-full max-w-none object-cover rounded-xl shadow-2xl"
-        onerror="handleVideoError()"
-    >
-        Your browser does not support the video tag.
-    </video>
-
-    <!-- Overlay Text (Optional: For good measure, so the user knows what's happening) -->
-    <div class="z-10 text-center p-6 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg text-white shadow-xl">
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            The Game is Afoot
-        </h1>
-        <p class="mt-2 text-sm sm:text-base font-medium text-gray-300">
-            Now playing: Clue Night.mp4
-        </p>
-        <p id="error-message" class="mt-2 text-red-400 font-semibold hidden"></p>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <video 
+            id="loopedVideo"
+            src="Clue Night.mp4" 
+            autoplay 
+            loop 
+            playsinline
+            class="w-full h-full object-contain max-h-full max-w-full rounded-xl shadow-2xl"
+            onerror="handleVideoError()"
+        >
+            Your browser does not support the video tag.
+        </video>
     </div>
 
+    <!-- Play Button Overlay - Appears if autoplay fails (required for audio to play) -->
+    <div id="play-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm z-20 hidden">
+        <h1 class="text-white text-3xl font-bold mb-4">Click to Start Video and Audio</h1>
+        <button 
+            id="play-button" 
+            class="px-8 py-4 text-xl font-bold text-white bg-indigo-600 rounded-full shadow-lg transition duration-200 hover:bg-indigo-700 transform hover:scale-105 active:scale-95"
+        >
+            ▶ Play
+        </button>
+    </div>
+
+    <!-- Error Message Area -->
+    <p id="error-message" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center text-red-400 font-semibold p-4 bg-black bg-opacity-80 rounded-lg hidden z-30"></p>
+
     <script>
-        // Use JavaScript to handle the potential video loading error gracefully.
+        const videoElement = document.getElementById('loopedVideo');
+        const playOverlay = document.getElementById('play-overlay');
+        const playButton = document.getElementById('play-button');
+
+        // Function to handle video loading errors
         function handleVideoError() {
-            const videoElement = document.getElementById('loopedVideo');
             const errorMessage = document.getElementById('error-message');
-            
-            errorMessage.textContent = 'Error: Could not load the video file (Clue Night.mp4). Make sure the file is uploaded to the same folder as index.html.';
+            errorMessage.textContent = 'Error: Could not load the video file (Clue Night.mp4). Please ensure the file is uploaded to the same folder.';
             errorMessage.classList.remove('hidden');
-            videoElement.classList.add('opacity-0'); // Hide the broken video element
+            playOverlay.classList.add('hidden'); // Hide play prompt if there's a file error
         }
 
-        // Optional: Programmatically ensure playback starts after user interaction
+        // Attempt to autoplay when the page loads
         document.addEventListener('DOMContentLoaded', () => {
-            const videoElement = document.getElementById('loopedVideo');
-            // Attempt to play on load, though 'autoplay' and 'muted' should handle it.
-            // This is just a robust fallback.
-            videoElement.play().catch(error => {
-                console.warn("Autoplay was blocked. Since the video is muted, this is often a temporary browser warning.");
-                // Since the video is muted and set to loop, it should still play automatically.
+            videoElement.play().then(() => {
+                // Autoplay successful (unlikely with sound, but possible)
+                playOverlay.classList.add('hidden');
+            }).catch(error => {
+                // Autoplay failed (expected with sound). Show the play button.
+                console.log("Autoplay blocked, showing play prompt for audio.");
+                playOverlay.classList.remove('hidden');
+            });
+        });
+
+        // Handle the user clicking the play button
+        playButton.addEventListener('click', () => {
+            videoElement.play().then(() => {
+                playOverlay.classList.add('hidden');
+            }).catch(error => {
+                // If play still fails (e.g., policy change), handle it.
+                console.error("Manual playback failed:", error);
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = 'Playback failed. Please ensure your browser is up to date.';
+                errorMessage.classList.remove('hidden');
             });
         });
     </script>
