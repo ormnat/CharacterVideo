@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clue Night Video Loop</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom configuration for Inter font -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 overflow-hidden h-screen flex items-center justify-center">
+
+    <!-- 
+        The video element is set to:
+        1. autoplay: Start playing as soon as it can.
+        2. loop: Repeat indefinitely.
+        3. muted: Required for autoplay to work on most modern browsers.
+        4. playsinline: Recommended for proper behavior on iOS devices.
+    -->
+    <video 
+        id="loopedVideo"
+        src="Clue Night.mp4" 
+        autoplay 
+        loop 
+        muted 
+        playsinline
+        class="absolute z-0 w-auto min-w-full min-h-full max-w-none object-cover rounded-xl shadow-2xl"
+        onerror="handleVideoError()"
+    >
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Overlay Text (Optional: For good measure, so the user knows what's happening) -->
+    <div class="z-10 text-center p-6 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg text-white shadow-xl">
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            The Game is Afoot
+        </h1>
+        <p class="mt-2 text-sm sm:text-base font-medium text-gray-300">
+            Now playing: Clue Night.mp4
+        </p>
+        <p id="error-message" class="mt-2 text-red-400 font-semibold hidden"></p>
+    </div>
+
+    <script>
+        // Use JavaScript to handle the potential video loading error gracefully.
+        function handleVideoError() {
+            const videoElement = document.getElementById('loopedVideo');
+            const errorMessage = document.getElementById('error-message');
+            
+            errorMessage.textContent = 'Error: Could not load the video file (Clue Night.mp4). Make sure the file is uploaded to the same folder as index.html.';
+            errorMessage.classList.remove('hidden');
+            videoElement.classList.add('opacity-0'); // Hide the broken video element
+        }
+
+        // Optional: Programmatically ensure playback starts after user interaction
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoElement = document.getElementById('loopedVideo');
+            // Attempt to play on load, though 'autoplay' and 'muted' should handle it.
+            // This is just a robust fallback.
+            videoElement.play().catch(error => {
+                console.warn("Autoplay was blocked. Since the video is muted, this is often a temporary browser warning.");
+                // Since the video is muted and set to loop, it should still play automatically.
+            });
+        });
+    </script>
+</body>
+</html>
